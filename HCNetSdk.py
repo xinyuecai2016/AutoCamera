@@ -1,6 +1,7 @@
 import os
 from ctypes import *
 import HCNetSdkTypes
+from WebCamCtrl import Position2DirectionPosition
 import time
 import ctypes.wintypes
 from HCNetSdkDefines import HCNetSdkDefines
@@ -26,22 +27,6 @@ class HCNetSdk:
         self.hsdk.NET_DVR_Init()
         self.hsdk.NET_DVR_SetConnectTime(2000, 1)
         self.hsdk.NET_DVR_SetReconnect(10000, True)
-        defines = HCNetSdkDefines()
-        self.TranslateTable={
-        "up":defines['TILT_DOWN'],
-        "down":defines['TILT_UP'],
-        "left":defines['PAN_LEFT'],
-        "right":defines['PAN_RIGHT'],
-        "upright":defines['DOWN_RIGHT'],
-        "upleft":defines['DOWN_LEFT'],
-        "rightup":defines['DOWN_RIGHT'],
-        "leftup":defines['DOWN_LEFT'],
-        "downright": defines['UP_RIGHT'],
-        "downleft": defines['UP_LEFT'],
-        "rightdown": defines['UP_RIGHT'],
-        "leftdown": defines['UP_LEFT']}
-
-
     def Login(self,UserName="admin",Password="jishukaifa3432"):
         struLoginInfo = HCNetSdkTypes.NET_DVR_USER_LOGIN_INFO()
 
@@ -71,30 +56,41 @@ class HCNetSdk:
             ctypes.wintypes.DWORD(dwStop),
             ctypes.wintypes.DWORD(dwSpeed))
     def Control(self,command,speed):
-        self.PTZControlWithSpeed_Other(self.TranslateTable[command], 0, speed)
+        self.PTZControlWithSpeed_Other(command, 0, speed)
     def Halt(self):
-        self.PTZControlWithSpeed_Other(self.TranslateTable['left'], 1, 7)
+        self.PTZControlWithSpeed_Other(27, 1, 7)
     def GetLastError(self):
         print(self.hsdk.NET_DVR_GetLastError())
 if __name__=="__main__":
     handle=HCNetSdk()
     handle.Init()
     handle.Login()
-    speed=1
+    defines = HCNetSdkDefines()
     while(True):
-        key=keyboard.read_key()
-        print(key)
-        if (str(key) == 'KeyboardEvent(up down)'):
-            speed = speed + 1
-            if (speed > 7):
-                speed = 7
-            print(speed)
-            handle.Control('left', speed)
+        key = keyboard.read_key()
         if (str(key) == 'KeyboardEvent(down down)'):
-            speed = speed - 1
-            if (speed < 1):
-                speed = 1
-            print(speed)
-            handle.Control('left', speed)
+            direction, speed = Position2DirectionPosition(320, -240 )
+
+            handle.Control(defines[direction], int(speed))
+
         if (str(key)=='KeyboardEvent(esc down)'):
             handle.Halt()
+    # direction,speed=Position2DirectionPosition(300,10)
+    # handle.Control(defines[direction],int(speed))
+    # while(True):
+    #     key=keyboard.read_key()
+    #     print(key)
+    #     if (str(key) == 'KeyboardEvent(up down)'):
+    #         speed = speed + 1
+    #         if (speed > 7):
+    #             speed = 7
+    #         print(speed)
+    #         handle.Control('left', speed)
+    #     if (str(key) == 'KeyboardEvent(down down)'):
+    #         speed = speed - 1
+    #         if (speed < 1):
+    #             speed = 1
+    #         print(speed)
+    #         handle.Control('left', speed)
+    #     if (str(key)=='KeyboardEvent(esc down)'):
+    #         handle.Halt()
