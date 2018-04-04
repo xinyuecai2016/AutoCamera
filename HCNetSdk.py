@@ -1,13 +1,13 @@
 import os
 from ctypes import *
 import HCNetSdkTypes
-from WebCamCtrl import Position2DirectionPosition
-import time
 import ctypes.wintypes
 from HCNetSdkDefines import HCNetSdkDefines
-import keyboard
+import time
+import threading
 class HCNetSdk:
     def __init__(self):
+        self.TransTable=HCNetSdkDefines()
         try:
             pwd=os.path.dirname(os.path.abspath(__file__))
             dll_execute = os.path.join(pwd,"./HC/HCNetSDK.dll")  # the directory with the .py file
@@ -40,13 +40,9 @@ class HCNetSdk:
 
         struLoginInfo_p=byref(struLoginInfo)
         struDeviceInfoV40_p=byref(struDeviceInfoV40)
-
         self.lUserID = c_long(self.hsdk.NET_DVR_Login_V40(struLoginInfo_p,struDeviceInfoV40_p))
-        # if(self.GetLastError()!=0):
-        #     raise ConnectionError
     def Logout(self):
         self.hsdk.NET_DVR_Logout(self.lUserID)
-        self.NET_DVR_Cleanup()
     def PTZControlWithSpeed_Other(self,dwPTZCommand,dwStop,dwSpeed):
         channel_default=1
         self.hsdk.NET_DVR_PTZControlWithSpeed_Other(
@@ -55,42 +51,71 @@ class HCNetSdk:
             ctypes.wintypes.DWORD(dwPTZCommand),
             ctypes.wintypes.DWORD(dwStop),
             ctypes.wintypes.DWORD(dwSpeed))
-    def Control(self,command,speed):
-        self.PTZControlWithSpeed_Other(command, 0, speed)
+    def ControlBySpeed(self,command,speed):
+        self.PTZControlWithSpeed_Other(self.TransTable[command], 0, speed)
+    def ControlByTime(self,command,time):
+        self.PTZControlWithSpeed_Other(self.TransTable[command], 0, 7)
+        timer=threading.Timer(time,self.Halt)
+        timer.start()
+    # def
+    def Cruise(self):
+        self.ControlBySpeed('TILT_DOWN', 7)
+        time.sleep(1)
+        self.ControlBySpeed('PAN_LEFT', 4)
     def Halt(self):
-        self.PTZControlWithSpeed_Other(27, 1, 7)
+        self.PTZControlWithSpeed_Other(self.TransTable['PAN_LEFT'], 1, 7)
     def GetLastError(self):
         print(self.hsdk.NET_DVR_GetLastError())
+
+
 if __name__=="__main__":
     handle=HCNetSdk()
     handle.Init()
     handle.Login()
     defines = HCNetSdkDefines()
-    while(True):
-        key = keyboard.read_key()
-        if (str(key) == 'KeyboardEvent(down down)'):
-            direction, speed = Position2DirectionPosition(320, -240 )
+    # handle.ControlByTime(defines['PAN_LEFT'],1)
+    # handle.Cruise()
+    # while(True):
 
-            handle.Control(defines[direction], int(speed))
-
-        if (str(key)=='KeyboardEvent(esc down)'):
-            handle.Halt()
+        # for i in range(1,8):
+    handle.ControlBySpeed("PAN_LEFT",3)
+            # print("PAN_LEFT "+str(i))
+            # time.sleep(1)
+            # handle.Halt()
+            # time.sleep(1)
+        # for i in reversed(range(1,8)):
+        #     handle.Control(defines["PAN_LEFT"], i)
+        #     print("PAN_LEFT"+str(i))
+        #     time.sleep(20 / 20.0)
+        # for i in range(1, 8):
+        #     handle.Control(defines["PAN_RIGHT"], i)
+        #     print("PAN_RIGHT " + str(i))
+        #     time.sleep(10 / 20.0)
+        # for i in reversed(range(1, 8)):
+        #     handle.Control(defines["PAN_RIGHT"], i)
+        #     print("PAN_RIGHT" + str(i))
+        #     time.sleep(10 / 20.0)
+        # handle.Control(defines["PAN_RIGHT"], 7)
+        # time.sleep(10 / 20.0)
+        # key = keyboard.read_key()
+        # if (str(key) == 'KeyboardEvent(down down)'):
+        #     direction, speed = Position2DirectionPosition(320, -240)
+        #     handle.Control(defines[direction], int(speed))
+        # if (str(key)=='KeyboardEvent(esc down)'):
+        #     handle.Halt()
     # direction,speed=Position2DirectionPosition(300,10)
     # handle.Control(defines[direction],int(speed))
+    # speed=3
     # while(True):
     #     key=keyboard.read_key()
     #     print(key)
     #     if (str(key) == 'KeyboardEvent(up down)'):
-    #         speed = speed + 1
-    #         if (speed > 7):
-    #             speed = 7
-    #         print(speed)
-    #         handle.Control('left', speed)
+    #         handle.Control(defines["TILT_DOWN"], speed)
     #     if (str(key) == 'KeyboardEvent(down down)'):
-    #         speed = speed - 1
-    #         if (speed < 1):
-    #             speed = 1
-    #         print(speed)
-    #         handle.Control('left', speed)
+    #         handle.Control(defines["TILT_UP"], speed)
+    #     if (str(key) == 'KeyboardEvent(left down)'):
+    #         handle.Control(defines["PAN_LEFT"], speed)
+    #     if (str(key) == 'KeyboardEvent(right down)'):
+    #         handle.Control(defines["PAN_RIGHT"], speed)
     #     if (str(key)=='KeyboardEvent(esc down)'):
     #         handle.Halt()

@@ -1,4 +1,5 @@
 from ctypes import *
+from ctypes import wintypes
 class LPNET_DVR_DEVICEINFO_V30(Structure):
     SERIALNO_LEN=48
     _fields_ = [('sSerialNumber', c_ubyte*SERIALNO_LEN ),
@@ -62,3 +63,14 @@ class NET_DVR_USER_LOGIN_INFO(Structure):
                 ('iProxyID',c_long),
                 ('byRes3',c_ubyte*120)
                 ]
+
+class NET_DVR_PTZ_3D_SPEED_CONTROL(Structure):
+    _fields_ = [('dwSize', wintypes.DWORD),
+                ('dwChannel',wintypes.DWORD),
+                ('byPSpeed',wintypes.BYTE),
+                ('byTSpeed',wintypes.BYTE),
+                ('byZSpeed',wintypes.BYTE),
+                ('byPDirect',wintypes.BYTE),
+                ('byTDirect',wintypes.BYTE),
+                ('byZDirect',wintypes.BYTE),
+                ('byRes',wintypes.BYTE*18),]

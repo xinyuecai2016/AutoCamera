@@ -30,7 +30,6 @@ def Position2DirectionPosition(x,y):
         speed=7
     if(abs(direction)==2):
         speed=round(speed/480.0*640.0)
-
     return Direct2Command(direction),str(speed)
 
 if __name__ =="__main__":

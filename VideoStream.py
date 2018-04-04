@@ -8,7 +8,7 @@ cap2 = cv2.VideoCapture("rtsp://admin:jishukaifa3432"
 # 第三码流，我从来没有链接上
 cap3 = cv2.VideoCapture("rtsp://admin:jishukaifa3432"
 "@192.168.1.64:554/Streaming/Channels/103?transportmode=unicast")
-cap=cap2
+cap=cap1
 print(cap.isOpened())
 
 while (cap.isOpened()):
